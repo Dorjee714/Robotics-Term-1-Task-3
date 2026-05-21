@@ -1,97 +1,191 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-long randNumber;
+long diceValue;
 
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 const int btn = 7;
-const int reedSwitch1 = A0;
-const int reedSwitch2 = A1;
-const int reedSwitch3 = A2;
-const int reedSwitch4 = A3;
-const int led1 = 13;
-const int led2 = 12;
-const int led3 = 4;
-const int led4 = 2;
+int buttonState = HIGH;
+int lastButtonState = HIGH;
+
+const int buzzer = 8;
+
+const int reed1 = A0;
+const int reed2 = A1;
+const int reed3 = A2;
+const int reed4 = A3;
+
+const int LED1 = 13;
+const int LED2 = 12;
+const int LED3 = 4;
+const int LED4 = 2;
+
+int currentPlayer = 1;
 
 void setup() {
+
+  Serial.begin(9600);
   lcd.begin();
   lcd.backlight();
 
   pinMode(btn, INPUT_PULLUP);
-  Serial.begin(9600);
+  pinMode(buzzer, OUTPUT);
+  
 
   randomSeed(analogRead(0));
 
-  pinMode(reedSwitch1, INPUT_PULLUP);
-  pinMode(reedSwitch2, INPUT_PULLUP);
-  pinMode(reedSwitch3, INPUT_PULLUP);
-  pinMode(reedSwitch4, INPUT_PULLUP);
+  pinMode(reed1, INPUT_PULLUP);
+  pinMode(reed2, INPUT_PULLUP);
+  pinMode(reed3, INPUT_PULLUP);
+  pinMode(reed4, INPUT_PULLUP);
+
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(LED4, OUTPUT);
+
+  // Start screen
+  lcd.setCursor(0, 0);
+  lcd.print("Electronic");
+  lcd.setCursor(0, 1);
+  lcd.print("Ludo Game");
+
+  delay(2000);
+
+  displayTurn();
 
 }
+
 void loop() {
 
-int btnValue = digitalRead(btn);
-int reedValue1 = digitalRead(reedSwitch1);
-int reedValue2 = digitalRead(reedSwitch2);
-int reedValue3 = digitalRead(reedSwitch3);
-int reedValue4 = digitalRead(reedSwitch4);
-randNumber = random(1,6);
+  buttonState = digitalRead(btn);
 
-if (btnValue == HIGH) {
-    lcd.setCursor(0, 0);
-    lcd.clear();
-    lcd.print(randNumber);
-    delay(1500);
- }else if(btnValue == LOW){
-   lcd.setCursor(0, 0);
-   lcd.clear();
-   delay(10);
-   lcd.print("Waiting...     ");
-   delay(500);
- }else{
+  if (lastButtonState == HIGH && buttonState == LOW) {
+    rollDice();
+    delay(2000);
+    nextPlayer();
+  }
+
+  lastButtonState = buttonState;
+
+  checkHomeSensors();
+}
+
+void rollDice(){
+  diceValue = random(1,7);
   lcd.clear();
- }
+  lcd.setCursor(0, 0);
+  lcd.print("Player ");
+  lcd.print(currentPlayer);
 
-if (reedValue1 == LOW) {
-    digitalWrite(led1, HIGH);
-    lcd.setCursor(0, 0);
-    lcd.print("Red Token ");
-    lcd.setCursor(0, 1);
-    lcd.print("Reached Home!");
-    delay(500);
-  }
-  else if (reedValue2 == LOW){
-    digitalWrite(led2, HIGH);
-    lcd.setCursor(0, 0);
-    lcd.print("Green Token ");
-    lcd.setCursor(0, 1);
-    lcd.print("Reached Home!");
-    delay(500);
-  }
- else if (reedValue3 == LOW){
-    digitalWrite(led3, HIGH);
-    lcd.setCursor(0, 0);
-    lcd.print("Yellow Token ");
-    lcd.setCursor(0, 1);
-    lcd.print("Reached Home!");
-    delay(500);
- }
- else if (reedValue4 == LOW){
-    digitalWrite(led4, HIGH);
-    lcd.setCursor(0, 0);
-    lcd.print("Blue Token ");
-    lcd.setCursor(0, 1);
-    lcd.print("Reached Home!");
-    delay(500);
- }
- else{
-    digitalWrite(led1, LOW);
-    digitalWrite(led2, LOW);
-    digitalWrite(led3, LOW);
-    digitalWrite(led4, LOW);
-        
- }
+  lcd.setCursor(0, 1);
+  lcd.print("Dice: ");
+  lcd.print(diceValue);
 
+  tone(buzzer, 1000);
+  delay(100);
+
+  tone(buzzer, 1200);
+  delay(100);
+
+  noTone(buzzer);
+
+  delay(1500);
+}
+
+void nextPlayer() {
+  currentPlayer++;
+
+  if (currentPlayer > 4){
+    currentPlayer = 1;
+  }
+
+  displayTurn();
+}
+
+void displayTurn() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Player ");
+  lcd.print(currentPlayer);
+
+  lcd.setCursor(0, 1);
+  lcd.print("'s Turn");
+}
+void checkHomeSensors() {
+  if (digitalRead(reed1) == LOW) {
+
+    digitalWrite(LED1, HIGH);
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Player 1");
+
+    lcd.setCursor(0, 1);
+    lcd.print("Reached Home!");
+
+    victorySound();
+
+    delay(1000);
+  }else if (digitalRead(reed2) == LOW) {
+
+    digitalWrite(LED2, HIGH);
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Player 2");
+
+    lcd.setCursor(0, 1);
+    lcd.print("Reached Home!");
+
+    victorySound();
+
+    delay(1000);
+  }else if (digitalRead(reed3) == LOW) {
+
+    digitalWrite(LED3, HIGH);
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Player 3");
+
+    lcd.setCursor(0, 1);
+    lcd.print("Reached Home!");
+
+    victorySound();
+
+    delay(1000);
+  }else if (digitalRead(reed4) == LOW) {
+
+    digitalWrite(LED4, HIGH);
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Player 1");
+
+    lcd.setCursor(0, 1);
+    lcd.print("Reached Home!");
+
+    victorySound();
+
+    delay(1000);
+  }else{ 
+     digitalWrite(LED1, LOW);
+     digitalWrite(LED2, LOW);
+     digitalWrite(LED3, LOW);
+     digitalWrite(LED4, LOW);
+  }
+}
+void victorySound() {
+  tone(buzzer, 1000);
+  delay(150);
+
+  tone(buzzer, 1200);
+  delay(150);
+
+  tone(buzzer, 1500);
+  delay(200);
+
+  noTone(buzzer);
 }
