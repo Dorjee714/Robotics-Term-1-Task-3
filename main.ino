@@ -7,7 +7,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 const int btn = 7;
 int buttonState = HIGH;
-int lastButtonState = HIGH;
+int lastButtonState = digitalRead(btn);;
 
 const int buzzer = 8;
 
@@ -62,6 +62,7 @@ void loop() {
   buttonState = digitalRead(btn);
 
   if (lastButtonState == HIGH && buttonState == LOW) {
+    delay(50);
     rollDice();
     delay(2000);
     nextPlayer();
@@ -83,10 +84,10 @@ void rollDice(){
   lcd.print("Dice: ");
   lcd.print(diceValue);
 
-  tone(buzzer, 1000);
+  tone(buzzer, 2500);
   delay(100);
 
-  tone(buzzer, 1200);
+  tone(buzzer, 2700);
   delay(100);
 
   noTone(buzzer);
@@ -109,9 +110,10 @@ void displayTurn() {
   lcd.setCursor(0, 0);
   lcd.print("Player ");
   lcd.print(currentPlayer);
+  lcd.print("'S");
 
   lcd.setCursor(0, 1);
-  lcd.print("'s Turn");
+  lcd.print("Turn");
 }
 void checkHomeSensors() {
   if (digitalRead(reed1) == LOW) {
@@ -127,7 +129,7 @@ void checkHomeSensors() {
 
     victorySound();
 
-    delay(1000);
+    delay(200);
   }else if (digitalRead(reed2) == LOW) {
 
     digitalWrite(LED2, HIGH);
@@ -141,7 +143,7 @@ void checkHomeSensors() {
 
     victorySound();
 
-    delay(1000);
+    delay(200);
   }else if (digitalRead(reed3) == LOW) {
 
     digitalWrite(LED3, HIGH);
@@ -155,36 +157,39 @@ void checkHomeSensors() {
 
     victorySound();
 
-    delay(1000);
+    delay(200);
   }else if (digitalRead(reed4) == LOW) {
 
     digitalWrite(LED4, HIGH);
 
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Player 1");
+    lcd.print("Player 4");
 
     lcd.setCursor(0, 1);
     lcd.print("Reached Home!");
 
     victorySound();
 
-    delay(1000);
+    delay(200);
   }else{ 
      digitalWrite(LED1, LOW);
      digitalWrite(LED2, LOW);
      digitalWrite(LED3, LOW);
      digitalWrite(LED4, LOW);
+     delay(50);
+     displayTurn();
   }
+  
 }
 void victorySound() {
-  tone(buzzer, 1000);
+  tone(buzzer, 2000);
   delay(150);
 
-  tone(buzzer, 1200);
+  tone(buzzer, 2200);
   delay(150);
 
-  tone(buzzer, 1500);
+  tone(buzzer, 2500);
   delay(200);
 
   noTone(buzzer);
