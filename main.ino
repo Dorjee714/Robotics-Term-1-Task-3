@@ -45,13 +45,12 @@ void setup() {
   pinMode(LED3, OUTPUT);
   pinMode(LED4, OUTPUT);
 
-  // Start screen
   lcd.setCursor(0, 0);
   lcd.print("Electronic");
   lcd.setCursor(0, 1);
   lcd.print("Ludo Game");
 
-  delay(2000);
+  delay(5000);
 
   displayTurn();
 
